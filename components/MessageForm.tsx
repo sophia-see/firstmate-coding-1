@@ -148,7 +148,7 @@ export default function MessageForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Send {delayTime == 0 ? "" : `in ${delayTime} ${delayUnit}`}</Button>
+        <Button type="submit">Send {parseFloat(delayTime) == 0 ? "" : `in ${delayTime} ${delayUnit}`}</Button>
       </form>
     </Form>
   )
