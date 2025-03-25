@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
+import { Textarea } from './ui/textarea'
 
 const DelayUnit = ["seconds", "minutes", "hours"] as const;
 
@@ -129,7 +130,7 @@ export default function MessageForm() {
             <FormItem>
               <FormLabel>Message</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your message" {...field} />
+                <Textarea placeholder="Enter your message" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
