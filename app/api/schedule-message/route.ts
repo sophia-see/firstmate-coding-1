@@ -23,7 +23,7 @@ export async function POST(request: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          text: text,
+          text: `From Sophia See's Slack Bot: ${text}`,
         }),
       });
   
