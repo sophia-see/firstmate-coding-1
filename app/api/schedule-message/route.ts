@@ -28,11 +28,12 @@ export async function POST(request: Request) {
       });
   
       console.log({ response })
-  
-      return NextResponse.json({ status: 200, data: response })
     } catch (error: unknown) {
       console.log({ error })
       return NextResponse.json({ status: 404, error: "Error" })
     }
-  }, delayMs ?? 0)
+  }, delayMs ?? 0);
+
+  return NextResponse.json({ status: 200, message: "Message scheduled successfully" });
+
 }
