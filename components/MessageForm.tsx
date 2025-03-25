@@ -43,6 +43,9 @@ export default function MessageForm() {
     },
   })
 
+  const delayTime = form.watch("delay");
+  const delayUnit = form.watch("unit")
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const { url, text, delay, unit } = values;
 
@@ -50,7 +53,7 @@ export default function MessageForm() {
       toast("Invalid delay")
     } else {
       const delayNum = parseFloat(delay)
-      
+
       const delayInSeconds = unit === "seconds"
           ? delayNum
           : unit === "minutes"
@@ -69,7 +72,6 @@ export default function MessageForm() {
       } else {
         toast.error("Message not sent.")
       }
-
     }
 
   }
@@ -146,7 +148,7 @@ export default function MessageForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Send in </Button>
+        <Button type="submit">Send {delayTime == 0 ? "" : `in ${delayTime} ${delayUnit}`}</Button>
       </form>
     </Form>
   )
