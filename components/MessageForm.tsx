@@ -63,14 +63,18 @@ export default function MessageForm() {
           ? delayNum * 60
           : delayNum * 3600;
   
-      const response = await fetch("/api/schedule-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, text, delay:delayInSeconds }),
-      });
+          const result = await fetch("/api/schedule-message", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              webhookUrl: url,
+              text,
+              delay: delayInSeconds, // Optional delay in seconds
+            }),
+          });
   
-      if (response.status != 200) {
-        console.log({response})
+      if (result.status != 200) {
+        console.log({result})
         toast.error("Error in sending the message")
       }
     }
