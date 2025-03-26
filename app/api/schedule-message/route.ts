@@ -1,32 +1,21 @@
+import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 
+const redis = Redis.fromEnv();
+
 export async function POST(request: Request) {
-  const body = await request.text();
-  const data = JSON.parse(body);
-  console.log({ data });
+  const body = await request.json();
+  const { url: webhookUrl, text, delay } = body;
 
-  const { url: webhookUrl, text, delay } = data;
-  const delayMs = delay * 1000;
-
-  if (!webhookUrl || !text) {
-    return NextResponse.json({ message: "Webhook error", error: "Missing required fields" });
+  if (!webhookUrl || !text || !delay) {
+    return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
   }
 
-  // Send response immediately, then execute the delay in the background
-  setTimeout(async () => {
-    try {
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: `From Sophia See's Slack Bot: ${text}` }),
-      });
+  const messageId = `message:${Date.now()}`;
+  const sendAt = Date.now() + delay * 1000;
 
-      console.log("Slack message sent:", await response.json());
-    } catch (error) {
-      console.error("Error sending message:", error);
-    }
-  }, delayMs);
+  // Store message in Redis with a timestamp
+  await redis.set(messageId, JSON.stringify({ webhookUrl, text, sendAt }));
 
-  // Respond immediately to avoid timeout
   return NextResponse.json({ status: 200, message: "Message scheduled successfully" });
 }
