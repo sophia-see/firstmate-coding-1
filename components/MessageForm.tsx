@@ -70,6 +70,7 @@ export default function MessageForm() {
       });
   
       if (response.status != 200) {
+        console.log({response})
         toast.error("Error in sending the message")
       }
     }
