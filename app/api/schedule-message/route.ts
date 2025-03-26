@@ -12,20 +12,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Webhook error", error: "Missing required fields" });
   }
 
-  // Wait for setTimeout to complete before returning
-  await new Promise((resolve) => setTimeout(resolve, delayMs));
+  // Send response immediately, then execute the delay in the background
+  setTimeout(async () => {
+    try {
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: `From Sophia See's Slack Bot: ${text}` }),
+      });
 
-  try {
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: `From Sophia See's Slack Bot: ${text}` }),
-    });
+      console.log("Slack message sent:", await response.json());
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  }, delayMs);
 
-    console.log("Slack message sent:", await response.json());
-  } catch (error) {
-    console.error("Error sending message:", error);
-  }
-
-  return NextResponse.json({ status: 200, message: "Message sent successfully" });
+  // Respond immediately to avoid timeout
+  return NextResponse.json({ status: 200, message: "Message scheduled successfully" });
 }
