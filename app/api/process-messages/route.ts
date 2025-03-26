@@ -1,31 +1,23 @@
-import { Redis } from "@upstash/redis";
+import { NextResponse } from "next/server";
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+export async function POST(request: Request) {
+  const { webhookUrl, text } = await request.json();
 
-export async function POST(req: Request) {
-  const { messageId } = await req.json();
-  if (!messageId) return new Response(JSON.stringify({ error: "Missing message ID" }), { status: 400 });
-
-  const message = await redis.get<string>(messageId);
-  if (!message) return new Response(JSON.stringify({ error: "Message not found" }), { status: 404 });
-
-  const { text, webhookUrl } = JSON.parse(message);
-
-  try {
-    await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: `From Sophia See's Slack Bot: ${text}` }),
-    });
-
-    console.log(`✅ Message sent: ${text}`);
-    await redis.del(messageId); // Clean up
-  } catch (error) {
-    console.error("❌ Error sending message:", error);
+  if (!webhookUrl || !text) {
+    return NextResponse.json({ message: "Webhook error", error: "Missing fields" });
   }
 
-  return new Response(JSON.stringify({ message: "Message processed" }), { status: 200 });
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+
+    console.log("Message sent:", await response.json());
+    return NextResponse.json({ message: "Message sent successfully" });
+  } catch (error) {
+    console.error("Error sending message:", error);
+    return NextResponse.json({ message: "Error sending message" }, { status: 500 });
+  }
 }
