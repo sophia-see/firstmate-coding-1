@@ -49,7 +49,7 @@ export default function MessageForm() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     form.reset();
-    toast("Message sent!");
+    toast("Message request sent!");
     const { url, text, delay, unit } = values;
 
     if (!delay || parseFloat(delay) < 0){
@@ -70,7 +70,7 @@ export default function MessageForm() {
       });
   
       if (response.status != 200) {
-        toast.error("Message not sent.")
+        toast.error("Error in sending the message")
       }
     }
 
