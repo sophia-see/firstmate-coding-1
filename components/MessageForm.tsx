@@ -48,6 +48,8 @@ export default function MessageForm() {
   const delayUnit = form.watch("unit")
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    form.reset();
+    toast("Message sent!");
     const { url, text, delay, unit } = values;
 
     if (!delay || parseFloat(delay) < 0){
@@ -67,10 +69,7 @@ export default function MessageForm() {
         body: JSON.stringify({ url, text, delay:delayInSeconds }),
       });
   
-      if (response.status == 200) {
-        toast("Message sent!")  
-        form.reset();
-      } else {
+      if (response.status != 200) {
         toast.error("Message not sent.")
       }
     }
