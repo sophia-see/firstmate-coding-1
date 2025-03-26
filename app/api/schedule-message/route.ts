@@ -1,21 +1,32 @@
 import { Redis } from "@upstash/redis";
-import { NextResponse } from "next/server";
 
 const redis = Redis.fromEnv();
 
-export async function POST(request: Request) {
-  const body = await request.json();
-  const { url: webhookUrl, text, delay } = body;
+export async function POST(req: Request) {
+  const { text, webhookUrl, delay } = await req.json();
 
-  if (!webhookUrl || !text || !delay) {
-    return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+  if (!text || !webhookUrl || delay === undefined) {
+    return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
   }
 
   const messageId = `message:${Date.now()}`;
   const sendAt = Date.now() + delay * 1000;
 
-  // Store message in Redis with a timestamp
-  await redis.set(messageId, JSON.stringify({ webhookUrl, text, sendAt }));
+  await redis.set(messageId, JSON.stringify({ text, webhookUrl, sendAt }), { ex: delay + 60 });
 
-  return NextResponse.json({ status: 200, message: "Message scheduled successfully" });
+  // Schedule the QStash request
+  await fetch("https://qstash.upstash.io/v1/publish", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.UPSTASH_QSTASH_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+    url: `${process.env.PUBLIC_NEXT_URL}/api/process-messages`,
+      notBefore: sendAt, // QStash will trigger this after delay
+      body: JSON.stringify({ messageId }),
+    }),
+  });
+
+  return new Response(JSON.stringify({ message: "Scheduled successfully" }), { status: 200 });
 }
